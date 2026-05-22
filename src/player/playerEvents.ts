@@ -4,6 +4,8 @@ import { usePlayerStore } from "../store/playerStore";
 
 import { useQueueStore } from "../store/queueStore";
 
+import { updatePlaybackState } from "./mediaSessionState";
+
 const audio = audioEngine.instance;
 
 // Initialize volume from store
@@ -36,12 +38,16 @@ audio.addEventListener("play", () => {
   usePlayerStore
     .getState()
     .setError(null);
+
+  updatePlaybackState(true);
 });
 
 audio.addEventListener("pause", () => {
   usePlayerStore
     .getState()
     .setPlaying(false);
+
+  updatePlaybackState(false);
 });
 
 audio.addEventListener("ended", async () => {

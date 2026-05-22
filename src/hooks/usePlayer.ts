@@ -4,7 +4,11 @@ import { usePlayerStore } from "../store/playerStore";
 
 import { useQueueStore } from "../store/queueStore";
 
+import { getStreamUrl } from "../api/player";
+
 import type { Track } from "../types/track";
+
+import { setupMediaSession } from "../player/mediaSession";
 
 export function usePlayer() {
   const playerStore = usePlayerStore();
@@ -15,19 +19,23 @@ export function usePlayer() {
     track: Track,
     queue?: Track[]
   ) => {
-    if (!track.streamUrl) {
-      playerStore.setError("No stream URL available");
-      return;
-    }
-
     try {
       playerStore.setLoading(true);
 
       playerStore.setError(null);
 
-      await audioEngine.play(track.streamUrl);
+      const streamUrl =
+        track.streamUrl ??
+        (await getStreamUrl(track.id));
 
-      playerStore.setCurrentTrack(track);
+      const playableTrack = {
+        ...track,
+        streamUrl,
+      };
+
+      playerStore.setCurrentTrack(
+        playableTrack
+      );
 
       if (queue) {
         const index = queue.findIndex(
@@ -36,17 +44,46 @@ export function usePlayer() {
 
         queueStore.setQueue(queue, index);
       }
+
+      await audioEngine.play(streamUrl);
+
+      setupMediaSession(playableTrack, {
+        onPlay: () => {
+          audioEngine.resume();
+        },
+
+        onPause: () => {
+          audioEngine.pause();
+        },
+
+        onNext: async () => {
+          const next =
+            queueStore.nextTrack();
+
+          if (!next?.streamUrl) return;
+
+          await audioEngine.play(
+            next.streamUrl
+          );
+        },
+
+        onPrevious: async () => {
+          const prev =
+            queueStore.previousTrack();
+
+          if (!prev?.streamUrl) return;
+
+          await audioEngine.play(
+            prev.streamUrl
+          );
+        },
+      });
     } catch (error) {
-      const errorMessage = 
-        error instanceof Error 
-          ? error.message 
-          : "Failed to play track";
-      
-      playerStore.setError(errorMessage);
+      console.error(error);
 
-      playerStore.setPlaying(false);
-
-      console.error("Error playing track:", error);
+      playerStore.setError(
+        "Playback failed"
+      );
     } finally {
       playerStore.setLoading(false);
     }
