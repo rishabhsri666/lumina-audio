@@ -110,10 +110,9 @@ export function usePlayer() {
       );
 
       const streamUrl =
-        track.streamUrl ??
-        (await getStreamUrl(
-          track.id
-        ));
+  await getStreamUrl(
+    track.id
+  );
 
       const playableTrack = {
         ...track,
