@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 
 import TrackCard from "../components/player/TrackCard";
 
@@ -35,6 +35,13 @@ export default function SearchPage() {
     }
   };
 
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    await handleSearch();
+  };
+
   return (
     <div className="p-8">
       <div className="mb-10">
@@ -47,7 +54,10 @@ export default function SearchPage() {
         </p>
       </div>
 
-      <div className="flex gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-4"
+      >
         <input
           value={query}
           onChange={(e) =>
@@ -68,7 +78,7 @@ export default function SearchPage() {
         />
 
         <button
-          onClick={handleSearch}
+          type="submit"
           className="
             rounded-2xl
             bg-white
@@ -79,7 +89,7 @@ export default function SearchPage() {
         >
           Search
         </button>
-      </div>
+      </form>
 
       {loading && (
         <p className="mt-8 text-zinc-400">
