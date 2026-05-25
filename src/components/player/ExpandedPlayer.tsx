@@ -748,52 +748,95 @@ export default function ExpandedPlayer() {
           )}
 
           {/* song info */}
-          <div>
-            <p
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 18,
+            }}
+          >
+            <div
               style={{
-                margin: 0,
-
-                fontSize:
-                  "clamp(24px, 4vw, 52px)",
-
-                fontWeight: 800,
-
-                lineHeight: 1.1,
-
-                letterSpacing: "-0.03em",
-
-                display: "-webkit-box",
-
-                WebkitLineClamp: 2,
-
-                WebkitBoxOrient:
-                  "vertical",
-
-                overflow: "hidden",
+                flex: 1,
+                minWidth: 0,
               }}
             >
-              {currentTrack.title}
-            </p>
+              <p
+                style={{
+                  margin: 0,
 
-            <p
+                  fontSize:
+                    "clamp(24px, 4vw, 52px)",
+
+                  fontWeight: 800,
+
+                  lineHeight: 1.1,
+
+                  letterSpacing: "-0.03em",
+
+                  display: "-webkit-box",
+
+                  WebkitLineClamp: 2,
+
+                  WebkitBoxOrient:
+                    "vertical",
+
+                  overflow: "hidden",
+                }}
+              >
+                {currentTrack.title}
+              </p>
+
+              <p
+                style={{
+                  margin: "10px 0 0",
+
+                  fontSize:
+                    "clamp(14px, 2vw, 20px)",
+
+                  color:
+                    "rgba(255,255,255,0.55)",
+
+                  overflow: "hidden",
+
+                  whiteSpace: "nowrap",
+
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {currentTrack.artist}
+              </p>
+            </div>
+
+            <button
+              onClick={handleToggleLike}
               style={{
-                margin: "10px 0 0",
-
-                fontSize:
-                  "clamp(14px, 2vw, 20px)",
-
-                color:
-                  "rgba(255,255,255,0.55)",
-
-                overflow: "hidden",
-
-                whiteSpace: "nowrap",
-
-                textOverflow: "ellipsis",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 46,
+                height: 46,
+                borderRadius: 18,
+                border: "none",
+                background: "rgba(255,255,255,0.08)",
+                color: isLiked(currentTrack.id)
+                  ? "#ff4d6d"
+                  : "rgba(255,255,255,0.7)",
+                cursor: "pointer",
+                transition:
+                  "background 0.2s ease, transform 0.2s ease",
               }}
             >
-              {currentTrack.artist}
-            </p>
+              <Heart
+                size={24}
+                fill={
+                  isLiked(currentTrack.id)
+                    ? "currentColor"
+                    : "none"
+                }
+              />
+            </button>
           </div>
 
           {/* seek */}
@@ -884,54 +927,7 @@ export default function ExpandedPlayer() {
               <SkipBack size={32} />
             </button>
 
-            <button
-              onClick={
-                handleToggleLike
-              }
-              style={{
-                display: "flex",
-
-                alignItems: "center",
-
-                justifyContent:
-                  "center",
-
-                width: 54,
-
-                height: 54,
-
-                border: "none",
-
-                background: "none",
-
-                color:
-                  isLiked(
-                    currentTrack.id
-                  )
-                    ? "#ff4d6d"
-                    : "rgba(255,255,255,0.7)",
-
-                cursor: "pointer",
-
-                borderRadius: "50%",
-
-                transition:
-                  "all 0.2s ease",
-              }}
-            >
-              <Heart
-                size={28}
-                fill={
-                  isLiked(
-                    currentTrack.id
-                  )
-                    ? "currentColor"
-                    : "none"
-                }
-              />
-            </button>
-
-            <button
+              <button
               onClick={() =>
                 isPlaying
                   ? pause()

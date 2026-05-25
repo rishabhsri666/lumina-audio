@@ -26,6 +26,8 @@ import { getLikedSongs } from "./services/likedSongsService";
 
 import { useLikedSongsStore } from "./store/likedSongsStore";
 
+import { usePlayer } from "./hooks/usePlayer";
+
 import {
   observeAuthState,
   signInWithGoogle,
@@ -37,6 +39,9 @@ export default function App() {
     useUIStore();
 
   const { user } = useAuthStore();
+
+  const { isPlaying, pause, resume } =
+    usePlayer();
 
   const setLikedSongs =
     useLikedSongsStore(
@@ -89,6 +94,44 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const activeElement =
+        document.activeElement as
+          | HTMLElement
+          | null;
+
+      if (
+        activeElement?.matches(
+          "input, textarea, select, [contenteditable='true']"
+        )
+      ) {
+        return;
+      }
+
+      if (e.key === " ") {
+        e.preventDefault();
+
+        if (isPlaying) {
+          pause();
+        } else {
+          resume();
+        }
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handler
+    );
+
+    return () =>
+      window.removeEventListener(
+        "keydown",
+        handler
+      );
+  }, [isPlaying, pause, resume]);
+
   return (
     <div
       className="
@@ -140,7 +183,7 @@ export default function App() {
               <Link to="/liked">
                 Liked
               </Link>
-              
+
               <Link to="/search">
                 Search
               </Link>
