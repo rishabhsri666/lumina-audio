@@ -12,6 +12,12 @@ import type { Track } from "../types/track";
 
 import { setupMediaSession } from "../player/mediaSession";
 
+import { auth } from "../lib/firebase";
+
+import { saveRecentlyPlayed } from "../services/recentlyPlayedService";
+
+import { useRecentlyPlayedStore } from "../store/recentlyPlayedStore";
+
 // ─────────────────────────────────────────────
 // Module-level flag to ensure restore happens only once globally
 // ─────────────────────────────────────────────
@@ -23,6 +29,12 @@ export function usePlayer() {
 
   const queueStore =
     useQueueStore();
+
+  const addRecentlyPlayed =
+    useRecentlyPlayedStore(
+      (s) =>
+        s.addRecentlyPlayed
+    );
 
   // ─────────────────────────────────────────────
   // Restore persisted track on refresh (only once globally)
@@ -45,8 +57,40 @@ export function usePlayer() {
             playerStore.volume
           );
 
-          if (!track || !track.streamUrl) {
+          if (!track) {
             // No track to restore
+            playerStore.setLoading(
+              false
+            );
+            playerStore.setPlaying(
+              false
+            );
+            return;
+          }
+
+          let playableTrack = track;
+          let streamUrl = track.streamUrl;
+
+          try {
+            streamUrl = await getStreamUrl(
+              track.id
+            );
+          } catch (error) {
+            if (!streamUrl) {
+              throw error;
+            }
+          }
+
+          playableTrack = {
+            ...track,
+            streamUrl,
+          };
+
+          playerStore.setCurrentTrack(
+            playableTrack
+          );
+
+          if (!streamUrl) {
             playerStore.setLoading(
               false
             );
@@ -58,11 +102,42 @@ export function usePlayer() {
 
           // Restore audio source without auto-playing
           audioEngine.setSource(
-            track.streamUrl
+            streamUrl
           );
 
-          // Load metadata by loading the audio
+          // Restore playback time if needed
           const audio = audioEngine.instance;
+
+          if (
+            playerStore.currentTime >
+            0
+          ) {
+            const restoreTime =
+              playerStore.currentTime;
+
+            const restorePosition = () => {
+              audio.currentTime =
+                Math.min(
+                  restoreTime,
+                  audio.duration ||
+                    restoreTime
+                );
+
+              playerStore.setCurrentTime(
+                audio.currentTime
+              );
+            };
+
+            audio.addEventListener(
+              "loadedmetadata",
+              restorePosition,
+              {
+                once: true,
+              }
+            );
+          }
+
+          // Load metadata by loading the audio
           audio.load();
 
           // Always start paused on refresh to avoid autoplay issues
@@ -70,7 +145,7 @@ export function usePlayer() {
             false
           );
           playerStore.setCurrentTrack(
-            track
+            playableTrack
           );
           playerStore.setLoading(
             false
@@ -110,9 +185,9 @@ export function usePlayer() {
       );
 
       const streamUrl =
-  await getStreamUrl(
-    track.id
-  );
+        await getStreamUrl(
+          track.id
+        );
 
       const playableTrack = {
         ...track,
@@ -123,6 +198,20 @@ export function usePlayer() {
       playerStore.setCurrentTrack(
         playableTrack
       );
+
+      const user =
+        auth.currentUser;
+
+      if (user) {
+        addRecentlyPlayed(
+          playableTrack
+        );
+
+        await saveRecentlyPlayed(
+          user.uid,
+          playableTrack
+        );
+      }
 
       if (queue) {
         const index =

@@ -12,6 +12,8 @@ import SearchPage from "./pages/SearchPage";
 
 import LikedSongsPage from "./pages/LikedSongsPage";
 
+import RecentlyPlayedPage from "./pages/RecentlyPlayedPage";
+
 import MiniPlayer from "./components/player/MiniPlayer";
 
 import ExpandedPlayer from "./components/player/ExpandedPlayer";
@@ -34,6 +36,10 @@ import {
   logout,
 } from "./services/auth";
 
+import { getRecentlyPlayed } from "./services/recentlyPlayedService";
+
+import { useRecentlyPlayedStore } from "./store/recentlyPlayedStore";
+
 export default function App() {
   const { isPlayerExpanded } =
     useUIStore();
@@ -46,6 +52,12 @@ export default function App() {
   const setLikedSongs =
     useLikedSongsStore(
       (s) => s.setLikedSongs
+    );
+
+  const setRecentlyPlayed =
+    useRecentlyPlayedStore(
+      (s) =>
+        s.setRecentlyPlayed
     );
 
   useEffect(() => {
@@ -63,6 +75,16 @@ export default function App() {
               );
 
             setLikedSongs(songs);
+
+            const recent =
+              await getRecentlyPlayed(
+                user.uid
+              );
+
+            setRecentlyPlayed(
+              recent
+            );
+
           } catch (error) {
             console.error(
               "Failed to load liked songs:",
@@ -98,8 +120,8 @@ export default function App() {
     const handler = (e: KeyboardEvent) => {
       const activeElement =
         document.activeElement as
-          | HTMLElement
-          | null;
+        | HTMLElement
+        | null;
 
       if (
         activeElement?.matches(
@@ -182,6 +204,10 @@ export default function App() {
 
               <Link to="/liked">
                 Liked
+              </Link>
+
+              <Link to="/recent">
+                Recent
               </Link>
 
               <Link to="/search">
@@ -271,6 +297,11 @@ export default function App() {
             <Route
               path="/liked"
               element={<LikedSongsPage />}
+            />
+
+            <Route
+              path="/recent"
+              element={<RecentlyPlayedPage />}
             />
           </Routes>
         </main>
