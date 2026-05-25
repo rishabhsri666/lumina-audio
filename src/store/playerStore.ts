@@ -1,4 +1,7 @@
 import { create } from "zustand";
+
+import { persist } from "zustand/middleware";
+
 import type { Track } from "../types/track";
 
 interface PlayerState {
@@ -20,86 +23,138 @@ interface PlayerState {
 
   error: string | null;
 
-  setCurrentTrack: (track: Track | null) => void;
+  setCurrentTrack: (
+    track: Track | null
+  ) => void;
 
-  setPlaying: (playing: boolean) => void;
+  setPlaying: (
+    playing: boolean
+  ) => void;
 
-  setCurrentTime: (time: number) => void;
+  setCurrentTime: (
+    time: number
+  ) => void;
 
-  setDuration: (duration: number) => void;
+  setDuration: (
+    duration: number
+  ) => void;
 
-  setVolume: (volume: number) => void;
+  setVolume: (
+    volume: number
+  ) => void;
 
   toggleRepeat: () => void;
 
   toggleShuffle: () => void;
 
-  setLoading: (loading: boolean) => void;
+  setLoading: (
+    loading: boolean
+  ) => void;
 
-  setError: (error: string | null) => void;
+  setError: (
+    error: string | null
+  ) => void;
 }
 
-export const usePlayerStore = create<PlayerState>((set) => ({
-  currentTrack: null,
+export const usePlayerStore =
+  create<PlayerState>()(
+    persist(
+      (set) => ({
+        currentTrack: null,
 
-  isPlaying: false,
+        isPlaying: false,
 
-  currentTime: 0,
+        currentTime: 0,
 
-  duration: 0,
+        duration: 0,
 
-  volume: 1,
+        volume: 1,
 
-  isLoading: false,
+        isLoading: false,
 
-  repeat: false,
+        repeat: false,
 
-  shuffle: false,
+        shuffle: false,
 
-  error: null,
+        error: null,
 
-  setCurrentTrack: (track) =>
-    set({
-      currentTrack: track,
-    }),
+        setCurrentTrack: (
+          track
+        ) =>
+          set({
+            currentTrack: track,
+          }),
 
-  setPlaying: (playing) =>
-    set({
-      isPlaying: playing,
-    }),
+        setPlaying: (
+          playing
+        ) =>
+          set({
+            isPlaying: playing,
+          }),
 
-  setCurrentTime: (time) =>
-    set({
-      currentTime: time,
-    }),
+        setCurrentTime: (
+          time
+        ) =>
+          set({
+            currentTime: time,
+          }),
 
-  setDuration: (duration) =>
-    set({
-      duration,
-    }),
+        setDuration: (
+          duration
+        ) =>
+          set({
+            duration,
+          }),
 
-  setVolume: (volume) =>
-    set({
-      volume,
-    }),
+        setVolume: (
+          volume
+        ) =>
+          set({
+            volume,
+          }),
 
-  toggleRepeat: () =>
-    set((state) => ({
-      repeat: !state.repeat,
-    })),
+        toggleRepeat: () =>
+          set((state) => ({
+            repeat:
+              !state.repeat,
+          })),
 
-  toggleShuffle: () =>
-    set((state) => ({
-      shuffle: !state.shuffle,
-    })),
+        toggleShuffle: () =>
+          set((state) => ({
+            shuffle:
+              !state.shuffle,
+          })),
 
-  setLoading: (loading) =>
-    set({
-      isLoading: loading,
-    }),
+        setLoading: (
+          loading
+        ) =>
+          set({
+            isLoading: loading,
+          }),
 
-  setError: (error) =>
-    set({
-      error,
-    }),
-}));
+        setError: (
+          error
+        ) =>
+          set({
+            error,
+          }),
+      }),
+      {
+        name: "lumina-player-storage",
+
+        partialize: (state) => ({
+          currentTrack:
+            state.currentTrack,
+
+          volume:
+            state.volume,
+
+          repeat:
+            state.repeat,
+
+          shuffle:
+            state.shuffle,
+        }),
+      }
+    )
+  );

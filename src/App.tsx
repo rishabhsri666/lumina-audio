@@ -10,6 +10,8 @@ import HomePage from "./pages/HomePage";
 
 import SearchPage from "./pages/SearchPage";
 
+import LikedSongsPage from "./pages/LikedSongsPage";
+
 import MiniPlayer from "./components/player/MiniPlayer";
 
 import ExpandedPlayer from "./components/player/ExpandedPlayer";
@@ -17,6 +19,12 @@ import ExpandedPlayer from "./components/player/ExpandedPlayer";
 import { useUIStore } from "./store/uiStore";
 
 import { useAuthStore } from "./store/authStore";
+
+import { auth } from "./lib/firebase";
+
+import { getLikedSongs } from "./services/likedSongsService";
+
+import { useLikedSongsStore } from "./store/likedSongsStore";
 
 import {
   observeAuthState,
@@ -29,6 +37,38 @@ export default function App() {
     useUIStore();
 
   const { user } = useAuthStore();
+
+  const setLikedSongs =
+    useLikedSongsStore(
+      (s) => s.setLikedSongs
+    );
+
+  useEffect(() => {
+    const unsubscribe =
+      auth.onAuthStateChanged(
+        async (user) => {
+          if (!user) {
+            return;
+          }
+
+          try {
+            const songs =
+              await getLikedSongs(
+                user.uid
+              );
+
+            setLikedSongs(songs);
+          } catch (error) {
+            console.error(
+              "Failed to load liked songs:",
+              error
+            );
+          }
+        }
+      );
+
+    return () => unsubscribe();
+  }, []);
 
   // ───────────────────────────────────────────────────────────
   // Firebase Auth Observer
@@ -97,6 +137,10 @@ export default function App() {
                 Home
               </Link>
 
+              <Link to="/liked">
+                Liked
+              </Link>
+              
               <Link to="/search">
                 Search
               </Link>
@@ -179,6 +223,11 @@ export default function App() {
             <Route
               path="/search"
               element={<SearchPage />}
+            />
+
+            <Route
+              path="/liked"
+              element={<LikedSongsPage />}
             />
           </Routes>
         </main>

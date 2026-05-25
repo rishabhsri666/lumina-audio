@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { audioEngine } from "../player/audio";
 
 import { usePlayerStore } from "../store/playerStore";
@@ -10,26 +12,112 @@ import type { Track } from "../types/track";
 
 import { setupMediaSession } from "../player/mediaSession";
 
-export function usePlayer() {
-  const playerStore = usePlayerStore();
+// ─────────────────────────────────────────────
+// Module-level flag to ensure restore happens only once globally
+// ─────────────────────────────────────────────
+let hasRestored = false;
 
-  const queueStore = useQueueStore();
+export function usePlayer() {
+  const playerStore =
+    usePlayerStore();
+
+  const queueStore =
+    useQueueStore();
+
+  // ─────────────────────────────────────────────
+  // Restore persisted track on refresh (only once globally)
+  // ─────────────────────────────────────────────
+
+  useEffect(() => {
+    // Skip if already restored in another component instance
+    if (hasRestored) return;
+
+    const restoreTrack =
+      async () => {
+        hasRestored = true; // Mark as restored immediately to prevent duplicate restores
+
+        const track =
+          playerStore.currentTrack;
+
+        try {
+          // Set volume from persisted state
+          audioEngine.setVolume(
+            playerStore.volume
+          );
+
+          if (!track || !track.streamUrl) {
+            // No track to restore
+            playerStore.setLoading(
+              false
+            );
+            playerStore.setPlaying(
+              false
+            );
+            return;
+          }
+
+          // Restore audio source without auto-playing
+          audioEngine.setSource(
+            track.streamUrl
+          );
+
+          // Load metadata by loading the audio
+          const audio = audioEngine.instance;
+          audio.load();
+
+          // Always start paused on refresh to avoid autoplay issues
+          playerStore.setPlaying(
+            false
+          );
+          playerStore.setCurrentTrack(
+            track
+          );
+          playerStore.setLoading(
+            false
+          );
+        } catch (error) {
+          console.error(
+            "Failed to restore track:",
+            error
+          );
+          playerStore.setLoading(
+            false
+          );
+          playerStore.setPlaying(
+            false
+          );
+        }
+      };
+
+    restoreTrack();
+  }, []);
+
+  // ─────────────────────────────────────────────
+  // Main playback
+  // ─────────────────────────────────────────────
 
   const playTrack = async (
     track: Track,
     queue?: Track[]
   ) => {
     try {
-      playerStore.setLoading(true);
+      playerStore.setLoading(
+        true
+      );
 
-      playerStore.setError(null);
+      playerStore.setError(
+        null
+      );
 
       const streamUrl =
         track.streamUrl ??
-        (await getStreamUrl(track.id));
+        (await getStreamUrl(
+          track.id
+        ));
 
       const playableTrack = {
         ...track,
+
         streamUrl,
       };
 
@@ -38,46 +126,58 @@ export function usePlayer() {
       );
 
       if (queue) {
-        const index = queue.findIndex(
-          (t) => t.id === track.id
-        );
+        const index =
+          queue.findIndex(
+            (t) =>
+              t.id === track.id
+          );
 
-        queueStore.setQueue(queue, index);
+        queueStore.setQueue(
+          queue,
+          index
+        );
       }
 
-      await audioEngine.play(streamUrl);
+      await audioEngine.play(
+        streamUrl
+      );
 
-      setupMediaSession(playableTrack, {
-        onPlay: () => {
-          audioEngine.resume();
-        },
+      setupMediaSession(
+        playableTrack,
+        {
+          onPlay: () => {
+            audioEngine.resume();
+          },
 
-        onPause: () => {
-          audioEngine.pause();
-        },
+          onPause: () => {
+            audioEngine.pause();
+          },
 
-        onNext: async () => {
-          const next =
-            queueStore.nextTrack();
+          onNext: async () => {
+            const next =
+              queueStore.nextTrack();
 
-          if (!next?.streamUrl) return;
+            if (!next) return;
 
-          await audioEngine.play(
-            next.streamUrl
-          );
-        },
+            await playTrack(
+              next
+            );
+          },
 
-        onPrevious: async () => {
-          const prev =
-            queueStore.previousTrack();
+          onPrevious:
+            async () => {
+              const prev =
+                queueStore.previousTrack();
 
-          if (!prev?.streamUrl) return;
+              if (!prev)
+                return;
 
-          await audioEngine.play(
-            prev.streamUrl
-          );
-        },
-      });
+              await playTrack(
+                prev
+              );
+            },
+        }
+      );
     } catch (error) {
       console.error(error);
 
@@ -85,9 +185,15 @@ export function usePlayer() {
         "Playback failed"
       );
     } finally {
-      playerStore.setLoading(false);
+      playerStore.setLoading(
+        false
+      );
     }
   };
+
+  // ─────────────────────────────────────────────
+  // Controls
+  // ─────────────────────────────────────────────
 
   const pause = () => {
     audioEngine.pause();
@@ -97,14 +203,22 @@ export function usePlayer() {
     audioEngine.resume();
   };
 
-  const seek = (time: number) => {
+  const seek = (
+    time: number
+  ) => {
     audioEngine.seek(time);
   };
 
-  const setVolume = (volume: number) => {
-    audioEngine.setVolume(volume);
+  const setVolume = (
+    volume: number
+  ) => {
+    audioEngine.setVolume(
+      volume
+    );
 
-    playerStore.setVolume(volume);
+    playerStore.setVolume(
+      volume
+    );
   };
 
   return {

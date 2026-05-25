@@ -11,8 +11,6 @@ import App from "./App";
 
 import "./index.css";
 
-import "./player/playerEvents";
-
 ReactDOM.createRoot(
   document.getElementById("root")!
 ).render(

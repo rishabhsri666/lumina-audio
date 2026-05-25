@@ -19,6 +19,19 @@ import { useQueueStore } from "../../store/queueStore";
 
 import { formatTime } from "../../utils/formatTime";
 
+import { Heart } from "lucide-react";
+
+import { useLikedSongsStore } from "../../store/likedSongsStore";
+
+import {
+  likeSong,
+  unlikeSong,
+} from "../../services/likedSongsService";
+
+import { useAuthStore } from "../../store/authStore";
+
+
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Slider
 // ─────────────────────────────────────────────────────────────────────────────
@@ -185,6 +198,15 @@ export default function ExpandedPlayer() {
 
   const queueStore = useQueueStore();
 
+  const {
+    isLiked,
+    addLikedSong,
+    removeLikedSong,
+  } = useLikedSongsStore();
+
+  const { user } =
+    useAuthStore();
+
   // ───────────────────────────────────────────────────────────────────────────
   // Responsive Detection
   // ───────────────────────────────────────────────────────────────────────────
@@ -247,44 +269,6 @@ export default function ExpandedPlayer() {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Keyboard Shortcuts
-  // ───────────────────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        collapsePlayer();
-      }
-
-      if (e.key === " ") {
-        e.preventDefault();
-
-        if (isPlaying) {
-          pause();
-        } else {
-          resume();
-        }
-      }
-    };
-
-    window.addEventListener(
-      "keydown",
-      handler
-    );
-
-    return () =>
-      window.removeEventListener(
-        "keydown",
-        handler
-      );
-  }, [
-    collapsePlayer,
-    isPlaying,
-    pause,
-    resume,
-  ]);
-
-  // ───────────────────────────────────────────────────────────────────────────
   // Track
   // ───────────────────────────────────────────────────────────────────────────
 
@@ -313,6 +297,45 @@ export default function ExpandedPlayer() {
   };
 
   const isMuted = volume === 0;
+
+  const handleToggleLike =
+    async () => {
+      if (
+        !currentTrack ||
+        !user
+      ) {
+        return;
+      }
+
+      const liked =
+        isLiked(
+          currentTrack.id
+        );
+
+      try {
+        if (liked) {
+          removeLikedSong(
+            currentTrack.id
+          );
+
+          await unlikeSong(
+            user.uid,
+            currentTrack.id
+          );
+        } else {
+          addLikedSong(
+            currentTrack
+          );
+
+          await likeSong(
+            user.uid,
+            currentTrack
+          );
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
   // ───────────────────────────────────────────────────────────────────────────
   // Artwork Size
@@ -859,6 +882,53 @@ export default function ExpandedPlayer() {
               }}
             >
               <SkipBack size={32} />
+            </button>
+
+            <button
+              onClick={
+                handleToggleLike
+              }
+              style={{
+                display: "flex",
+
+                alignItems: "center",
+
+                justifyContent:
+                  "center",
+
+                width: 54,
+
+                height: 54,
+
+                border: "none",
+
+                background: "none",
+
+                color:
+                  isLiked(
+                    currentTrack.id
+                  )
+                    ? "#ff4d6d"
+                    : "rgba(255,255,255,0.7)",
+
+                cursor: "pointer",
+
+                borderRadius: "50%",
+
+                transition:
+                  "all 0.2s ease",
+              }}
+            >
+              <Heart
+                size={28}
+                fill={
+                  isLiked(
+                    currentTrack.id
+                  )
+                    ? "currentColor"
+                    : "none"
+                }
+              />
             </button>
 
             <button
