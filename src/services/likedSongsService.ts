@@ -70,6 +70,6 @@ export async function getLikedSongs(
     await getDocs(ref);
 
   return snapshot.docs.map(
-    (doc) => doc.data()
+    (doc) => doc.data() as Track
   );
 }
