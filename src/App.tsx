@@ -189,12 +189,16 @@ export default function App() {
         <header
           className="
             flex
-            items-center
-            justify-between
+            flex-col
+            gap-4
             border-b
             border-white/5
-            px-8
+            px-6
             py-5
+            md:flex-row
+            md:items-center
+            md:justify-between
+            lg:px-8
           "
         >
           {/* Logo */}
@@ -210,11 +214,12 @@ export default function App() {
           </Link>
 
           {/* Nav */}
-          <div className="flex items-center gap-8">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8">
             <nav
               className="
                 flex
-                gap-6
+                flex-wrap
+                gap-4
                 text-zinc-400
               "
             >

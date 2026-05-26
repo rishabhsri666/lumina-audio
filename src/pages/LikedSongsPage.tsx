@@ -12,8 +12,9 @@ export default function LikedSongsPage() {
     usePlayer();
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 py-8">
-      {/* Header */}
+    <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <div className="min-h-screen bg-black text-white rounded-3xl p-6 lg:p-10">
+        {/* Header */}
       <div className="flex items-center gap-4 mb-10">
         <div className="w-16 h-16 rounded-2xl bg-pink-500 flex items-center justify-center shadow-lg">
           <Heart
@@ -56,7 +57,7 @@ export default function LikedSongsPage() {
       )}
 
       {/* Songs */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {likedSongs.map(
           (track, index) => (
             <button
@@ -67,7 +68,7 @@ export default function LikedSongsPage() {
                   likedSongs
                 )
               }
-              className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition text-left"
+              className="flex items-center gap-4 rounded-3xl bg-white/5 p-4 transition hover:bg-white/10 text-left"
             >
               {/* Index */}
               <span className="w-8 text-zinc-500 text-sm">
@@ -105,5 +106,6 @@ export default function LikedSongsPage() {
         )}
       </div>
     </div>
+  </div>
   );
 }

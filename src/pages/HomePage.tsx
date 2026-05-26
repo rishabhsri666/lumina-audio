@@ -27,7 +27,7 @@ export default function HomePage() {
     usePlaylistStore();
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
       {/* Header */}
       <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
@@ -88,7 +88,7 @@ export default function HomePage() {
                 <Link
                   key={playlist.id}
                   to={`/playlist/${playlist.id}`}
-                  className="rounded-3xl bg-white/5 p-5 border border-white/5 hover:bg-white/10 transition"
+                  className="group h-full rounded-3xl bg-white/5 p-5 border border-white/5 transition duration-200 hover:-translate-y-0.5 hover:bg-white/10"
                 >
                   <div className="aspect-square rounded-2xl bg-zinc-800 mb-4 flex items-center justify-center text-4xl font-black">
                     🎵

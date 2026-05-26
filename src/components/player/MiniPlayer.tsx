@@ -21,12 +21,14 @@ const { expandPlayer } = useUIStore();
         h-24
         border-t
         border-white/5
-        bg-black/70
+        bg-black/80
         backdrop-blur-2xl
-        px-6
+        px-4
+        sm:px-6
         flex
         items-center
         justify-between
+        gap-3
       "
     >
       <div

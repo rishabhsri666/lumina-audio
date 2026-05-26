@@ -36,14 +36,14 @@ export default function SearchPage() {
   };
 
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
     await handleSearch();
   };
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
       <div className="mb-10">
         <h1 className="text-5xl font-bold">
           Search
@@ -56,7 +56,7 @@ export default function SearchPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex gap-4"
+        className="flex flex-col gap-4 md:flex-row"
       >
         <input
           value={query}
@@ -74,6 +74,9 @@ export default function SearchPage() {
             py-4
             text-white
             outline-none
+            focus:border-white/30
+            focus:ring-2
+            focus:ring-white/20
           "
         />
 
@@ -83,8 +86,13 @@ export default function SearchPage() {
             rounded-2xl
             bg-white
             px-8
+            py-4
             text-black
             font-medium
+            transition
+            hover:opacity-90
+            w-full
+            md:w-auto
           "
         >
           Search

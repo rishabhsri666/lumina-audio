@@ -51,10 +51,11 @@ export default function TrackCard({
             rounded-full
             bg-white
             text-black
-            opacity-0
+            opacity-100
             shadow-glow
             transition
-            group-hover:opacity-100
+            md:opacity-0
+            md:group-hover:opacity-100
           "
         >
           <Play fill="black" />
