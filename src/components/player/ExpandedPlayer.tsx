@@ -1,4 +1,4 @@
-import {  useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Pause,
@@ -22,6 +22,10 @@ import { formatTime } from "../../utils/formatTime";
 import { Heart } from "lucide-react";
 
 import { useLikedSongsStore } from "../../store/likedSongsStore";
+
+import { ListPlus } from "lucide-react";
+
+import AddToPlaylistModal from "../playlist/AddToPlaylistModal";
 
 import {
   likeSong,
@@ -204,6 +208,11 @@ export default function ExpandedPlayer() {
     removeLikedSong,
   } = useLikedSongsStore();
 
+  const [
+    addPlaylistOpen,
+    setAddPlaylistOpen,
+  ] = useState(false);
+
   const { user } =
     useAuthStore();
 
@@ -267,6 +276,28 @@ export default function ExpandedPlayer() {
 
     touchStartY.current = null;
   };
+
+  useEffect(() => {
+    const handleKeyDown = (
+      event: KeyboardEvent
+    ) => {
+      if (event.key === "Escape") {
+        collapsePlayer();
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, [collapsePlayer]);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Track
@@ -809,34 +840,63 @@ export default function ExpandedPlayer() {
               </p>
             </div>
 
-            <button
-              onClick={handleToggleLike}
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                width: 46,
-                height: 46,
-                borderRadius: 18,
-                border: "none",
-                background: "rgba(255,255,255,0.08)",
-                color: isLiked(currentTrack.id)
-                  ? "#ff4d6d"
-                  : "rgba(255,255,255,0.7)",
-                cursor: "pointer",
-                transition:
-                  "background 0.2s ease, transform 0.2s ease",
+                gap: 12,
               }}
             >
-              <Heart
-                size={24}
-                fill={
-                  isLiked(currentTrack.id)
-                    ? "currentColor"
-                    : "none"
+              <button
+                onClick={handleToggleLike}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 46,
+                  height: 46,
+                  borderRadius: 18,
+                  border: "none",
+                  background: "rgba(255,255,255,0.08)",
+                  color: isLiked(currentTrack.id)
+                    ? "#ff4d6d"
+                    : "rgba(255,255,255,0.7)",
+                  cursor: "pointer",
+                  transition:
+                    "background 0.2s ease, transform 0.2s ease",
+                }}
+              >
+                <Heart
+                  size={24}
+                  fill={
+                    isLiked(currentTrack.id)
+                      ? "currentColor"
+                      : "none"
+                  }
+                />
+              </button>
+
+              <button
+                onClick={() =>
+                  setAddPlaylistOpen(true)
                 }
-              />
-            </button>
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 54,
+                  height: 54,
+                  border: "none",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "rgba(255,255,255,0.7)",
+                  cursor: "pointer",
+                  borderRadius: "50%",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <ListPlus size={28} />
+              </button>
+            </div>
           </div>
 
           {/* seek */}
@@ -927,7 +987,7 @@ export default function ExpandedPlayer() {
               <SkipBack size={32} />
             </button>
 
-              <button
+            <button
               onClick={() =>
                 isPlaying
                   ? pause()
@@ -1063,6 +1123,16 @@ export default function ExpandedPlayer() {
             </div>
           )}
         </div>
+
+        {currentTrack && (
+          <AddToPlaylistModal
+            open={addPlaylistOpen}
+            onClose={() =>
+              setAddPlaylistOpen(false)
+            }
+            track={currentTrack}
+          />
+        )}
       </div>
     </div>
   );

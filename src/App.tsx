@@ -14,6 +14,8 @@ import LikedSongsPage from "./pages/LikedSongsPage";
 
 import RecentlyPlayedPage from "./pages/RecentlyPlayedPage";
 
+import PlaylistPage from "./pages/PlaylistPage";
+
 import MiniPlayer from "./components/player/MiniPlayer";
 
 import ExpandedPlayer from "./components/player/ExpandedPlayer";
@@ -29,6 +31,10 @@ import { getLikedSongs } from "./services/likedSongsService";
 import { useLikedSongsStore } from "./store/likedSongsStore";
 
 import { usePlayer } from "./hooks/usePlayer";
+
+import { getPlaylists } from "./services/playlistService";
+
+import { usePlaylistStore } from "./store/playlistStore";
 
 import {
   observeAuthState,
@@ -60,6 +66,11 @@ export default function App() {
         s.setRecentlyPlayed
     );
 
+  const setPlaylists =
+    usePlaylistStore(
+      (s) => s.setPlaylists
+    );
+
   useEffect(() => {
     const unsubscribe =
       auth.onAuthStateChanged(
@@ -83,6 +94,15 @@ export default function App() {
 
             setRecentlyPlayed(
               recent
+            );
+
+            const playlists =
+              await getPlaylists(
+                user.uid
+              );
+
+            setPlaylists(
+              playlists
             );
 
           } catch (error) {
@@ -302,6 +322,11 @@ export default function App() {
             <Route
               path="/recent"
               element={<RecentlyPlayedPage />}
+            />
+
+            <Route
+              path="/playlist/:id"
+              element={<PlaylistPage />}
             />
           </Routes>
         </main>
