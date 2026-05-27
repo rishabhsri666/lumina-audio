@@ -146,6 +146,9 @@ export const usePlayerStore =
           currentTrack:
             state.currentTrack,
 
+          isPlaying:
+            state.isPlaying,
+
           currentTime:
             state.currentTime,
 

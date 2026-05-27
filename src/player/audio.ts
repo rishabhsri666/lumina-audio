@@ -138,8 +138,13 @@ class AudioEngine {
     this.audio.pause();
   }
 
-  resume() {
-    this.audio.play();
+  async resume() {
+    const playPromise =
+      this.audio.play();
+
+    if (playPromise !== undefined) {
+      await playPromise;
+    }
   }
 
   seek(time: number) {

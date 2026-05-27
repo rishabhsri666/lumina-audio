@@ -100,22 +100,19 @@ export function usePlayer() {
             return;
           }
 
-          // Restore audio source without auto-playing
+          // Restore audio source without auto-playing immediately
           audioEngine.setSource(
             streamUrl
           );
 
-          // Restore playback time if needed
           const audio = audioEngine.instance;
+          const shouldResume =
+            playerStore.isPlaying;
+          const restoreTime =
+            playerStore.currentTime;
 
-          if (
-            playerStore.currentTime >
-            0
-          ) {
-            const restoreTime =
-              playerStore.currentTime;
-
-            const restorePosition = () => {
+          const restorePosition = async () => {
+            if (restoreTime > 0) {
               audio.currentTime =
                 Math.min(
                   restoreTime,
@@ -126,27 +123,47 @@ export function usePlayer() {
               playerStore.setCurrentTime(
                 audio.currentTime
               );
-            };
+            }
 
-            audio.addEventListener(
-              "loadedmetadata",
-              restorePosition,
-              {
-                once: true,
+            if (shouldResume) {
+              try {
+                await audioEngine.resume();
+              } catch (error) {
+                console.warn(
+                  "Playback resume blocked:",
+                  error
+                );
+                playerStore.setPlaying(
+                  false
+                );
               }
-            );
-          }
+            }
+          };
+
+          audio.addEventListener(
+            "loadedmetadata",
+            restorePosition,
+            {
+              once: true,
+            }
+          );
+
+          // Set track info before loading so UI can render immediately.
+          playerStore.setCurrentTrack(
+            playableTrack
+          );
+          playerStore.setPlaying(false);
 
           // Load metadata by loading the audio
           audio.load();
 
-          // Always start paused on refresh to avoid autoplay issues
-          playerStore.setPlaying(
-            false
-          );
-          playerStore.setCurrentTrack(
-            playableTrack
-          );
+          if (
+            audio.readyState >=
+            HTMLMediaElement.HAVE_METADATA
+          ) {
+            restorePosition();
+          }
+
           playerStore.setLoading(
             false
           );
